@@ -19,7 +19,7 @@ steps:
 - task: VSTest@2
   inputs:
     testSelector: 'testAssemblies'
-    testAssemblyVer2: '**\*UnitTest*.dll
+    testAssemblyVer2: '**\$(BuildConfiguration)\*\*unittest*.dll
       !**\*TestAdapter.dll
       !**\obj\**'
     searchFolder: '$(System.DefaultWorkingDirectory)'
