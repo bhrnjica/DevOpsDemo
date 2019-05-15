@@ -23,17 +23,18 @@ steps:
   
 # ...
 # do this after other tasks such as building
-- task: DotNetCoreCLI@2
+- task: VSTest@2
+  displayName: 'Perform Testing'
   inputs:
-    command: test
-    projects: '**/*Tests/*.csproj'
-    arguments: '--configuration $(buildConfiguration)'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
 
 
 # ...
 # do this after you've built your app, near the end of your pipeline in most cases
 # for example, you do this before you deploy to an Azure web app on Windows
 - task: DotNetCoreCLI@2
+  displayName: 'Preparation for deployment'
   inputs:
     command: publish
     publishWebProjects: True
