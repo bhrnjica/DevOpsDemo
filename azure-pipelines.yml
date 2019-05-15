@@ -7,42 +7,40 @@ trigger:
 - master
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'vs2017-win2016'
 
 variables:
   buildConfiguration: 'Release'
-  buildPlatform: 'Any CPU'
-  solution: '**/*.sln'
+
 
 steps:
+
+#NuGet restore packages
+- script: dotnet restore
+
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
   
-- task: VSTest@2
+# ...
+# do this after other tasks such as building
+- task: DotNetCoreCLI@2
   inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    command: test
+    projects: '**/*Tests/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
 
-- task: PublishSymbols@1
-  displayName: 'Publish symbols path: '
+
+# ...
+# do this after you've built your app, near the end of your pipeline in most cases
+# for example, you do this before you deploy to an Azure web app on Windows
+- task: DotNetCoreCLI@2
   inputs:
-    SearchPattern: '**\bin\**\*.pdb'
-  continueOnError: true
+    command: publish
+    publishWebProjects: True
+    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    zipAfterPublish: True
 
 
-- task: CopyFiles@1
-  displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
-  inputs:
-    SourceFolder: 
-    Contents: |
-     **\bin\$(buildConfiguration)\**
-     src\*.testsettings
-    TargetFolder: '$(build.artifactstagingdirectory)'
-  condition: succeededOrFailed()
-
-
+# ...
+# do this near the end of your pipeline in most cases
 - task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: drop'
-  inputs:
-    PathtoPublish: '$(build.artifactstagingdirectory)'
-  condition: succeededOrFailed()
